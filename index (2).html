@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Veritas EvalEngine: the best way to evaluate your agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Quicksand:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1E4CC;--ink:#3B2A1A;--mute:#7A6650;--y:#F2B632;--o:#E5651F;--card:rgba(255,248,233,.82);--line:rgba(59,42,26,.2);--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#231910;--ink:#F1E4CC;--mute:#B9A68A;--o:#F08A4B;--card:rgba(46,34,22,.84);--line:rgba(241,228,204,.2);--on:#231910}}
+:root[data-theme="dark"]{--bg:#231910;--ink:#F1E4CC;--mute:#B9A68A;--o:#F08A4B;--card:rgba(46,34,22,.84);--line:rgba(241,228,204,.2);--on:#231910}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+#ui{position:fixed;inset:0;display:grid;grid-template-rows:auto auto 1fr;gap:12px;padding:calc(16px + env(safe-area-inset-top,0px)) 22px calc(16px + env(safe-area-inset-bottom,0px));pointer-events:none}
+#ui a,#ui button,#panel{pointer-events:auto}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+h1{margin:0;font-family:'Quicksand','Varela Round','Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:clamp(28px,6.2vw,84px);line-height:1;letter-spacing:-.01em;font-weight:700}
+.gh{background:var(--ink);color:var(--bg);text-decoration:none;font-weight:600;font-size:14px;padding:8px 15px;border-radius:99px}
+.tag{margin:0;font-family:'Quicksand','Varela Round','Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:clamp(16px,2.1vw,26px);line-height:1.25;font-weight:700;max-width:34ch}
+#steps{list-style:none;margin:0;padding:22px 0 4px;display:flex;gap:8px;overflow-x:auto}
+#steps li{flex:none;position:relative}
+#steps button{font:inherit;font-size:13.5px;color:var(--ink);background:transparent;border:1.5px solid var(--line);border-radius:99px;padding:5px 12px 5px 6px;display:flex;align-items:center;gap:8px;cursor:pointer}
+#steps i{font-style:normal;font-weight:800;font-size:12px;width:22px;height:22px;border-radius:50%;background:var(--y);color:#3B2A1A;display:grid;place-items:center}
+#steps .done button{border-color:var(--y)}
+#steps [aria-current="step"] button{background:var(--o);border-color:var(--o);color:var(--on)}
+#steps [aria-current="step"] i{background:var(--on);color:var(--o)}
+#steps li:first-child::before{content:"Start here";position:absolute;top:-19px;left:6px;font-size:12px;font-weight:600;color:var(--o)}
+.main{display:grid;grid-template-columns:1fr;align-items:center;justify-items:end;min-height:0}
+#panel{grid-column:1;width:min(100%,390px);background:var(--card);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+#panel .n{margin:0 0 4px;font-size:13px;color:var(--mute)}
+#panel h2{margin:0 0 10px;font-size:26px;line-height:1.1;letter-spacing:-.02em;font-weight:800}
+#panel p{margin:0 0 10px;font-size:15.5px;line-height:1.5}
+#panel .j{font-size:13px;color:var(--mute);line-height:1.45}
+#panel pre{margin:12px 0 14px;padding:10px 12px;border-radius:10px;background:rgba(229,101,31,.12);font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.acts{display:flex;gap:8px}
+.acts button{font:inherit;font-size:14px;font-weight:600;border-radius:99px;padding:8px 18px;cursor:pointer;border:1.5px solid var(--line);background:transparent;color:var(--ink)}
+.acts .nx{background:var(--o);border-color:var(--o);color:var(--on);margin-left:auto}
+#steps button:focus-visible,.acts button:focus-visible,.gh:focus-visible{outline:2px solid var(--o);outline-offset:2px}
+@media (max-width:820px){.main{grid-template-columns:1fr;align-items:end;justify-items:center}#panel{grid-column:1;padding:14px 16px}#panel h2{font-size:20px}#panel p{font-size:14px}#panel pre{margin:8px 0 10px;font-size:11.5px}}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="A small robot named Your AI agent drops down through eight stacked funnels, one per check"></canvas>
+<div id="ui">
+  <header><h1><span>Veritas EvalEngine</span></h1><a class="gh" href="https://github.com/bgm126/veritas-evalengine" target="_blank" rel="noopener">View on GitHub</a></header>
+  <div><p class="tag">The most complete way to evaluate your AI agent, all in one place.</p><ol id="steps"></ol></div>
+  <div class="main"><section id="panel" aria-live="polite"></section></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+const D=[
+{k:'Hallucinations',t:'Is it making things up?',b:'Splits each answer into single claims and checks every one against your source documents.',j:'Atomic claim decomposition, NLI entailment (local DeBERTa, no API key), Wilson confidence intervals.',c:'Claim: "expires after 2 years"\n  -> CONTRADICTED (source says 3 years)\nGrounding 50.0%, Wilson 95% LCB 9.5%'},
+{k:'Consistency',t:'Does it give the same answer twice?',b:'Asks the same question many times and groups the answers by meaning. Many different answers flag a question worth reviewing; they do not prove anything is wrong.',j:'Semantic entropy, bidirectional entailment clustering.',c:'Prompt -> sample N answers\n  -> group by meaning\n  -> compare group sizes'},
+{k:'Tool use',t:'Did it use its tools correctly?',b:'Replays what the agent did against a strict spec: right order, right inputs, no forbidden side effects.',j:'Deterministic tool replay, typed schemas, state-transition rules.',c:'forbidden_transitions:\n  [order_cancelled -> order_shipped]'},
+{k:'Judge trust',t:'Can we trust the AI grader?',b:'When one AI grades another, this measures the grader for bias and for agreement with itself.',j:"Cohen's kappa, Spearman rho, position-bias swap tests, Bradley-Terry ranking.",c:'Checks: inter-rater agreement,\nposition-bias flip rate,\ncalibration error'},
+{k:'Drift',t:'Did the new version get worse?',b:'Tracks quality run over run and raises a flag when it shifts between versions.',j:'PSI, EWMA, CUSUM, append-only JSONL run history.',c:'v1.3  PSI = 0.28, EWMA trending down\n      CUSUM: ALARM at t=47'},
+{k:'Attacks',t:'Can it be tricked?',b:'Fires 8 families of adversarial tests: prompt injection, jailbreaks, poisoned documents, forbidden actions.',j:'Attack success rate with Wilson CIs, Garak and PyRIT adapters.',c:'Prompt injection\n  expected: reject, keep boundaries'},
+{k:'Blame',t:'When agents fail together, who broke it?',b:'Follows the trace back to the first bad step and shows which agents inherited the mistake.',j:'Topological trace analysis, root-cause attribution.',c:'Researcher   x ROOT CAUSE\n  Writer     x DOWNSTREAM\n  Final      x OBSERVED FAILURE'},
+{k:'Release gate',t:'Ship or block?',b:'You write plain pass/fail rules. If any single rule fails, the release is blocked. No mystery composite score.',j:'Release policy engine, JUnit/Markdown/HTML reports, CI merge gating, audited baselines.',c:'fail_if:\n  - pass_rate < 0.95\n  - grounding.wilson_lcb < 0.80'}
+];
+const steps=document.getElementById('steps'),panel=document.getElementById('panel');
+const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let cur=0,auto=!calm;
+D.forEach((d,i)=>{const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.innerHTML='<i>'+(i+1)+'</i>'+d.k;b.onclick=()=>go(i,true);li.append(b);steps.append(li)});
+function ui(){
+  [...steps.children].forEach((li,i)=>{li.className=i<cur?'done':'';i===cur?li.setAttribute('aria-current','step'):li.removeAttribute('aria-current')});
+  const d=D[cur],last=cur===D.length-1;
+  panel.innerHTML='<p class="n">Check '+(cur+1)+' of '+D.length+'</p><h2>'+d.t+'</h2><p>'+d.b+'</p><pre>'+d.c.replace(/</g,'&lt;')+'</pre><div class="acts">'+(cur?'<button type="button" data-a="b">Back</button>':'')+'<button type="button" class="nx" data-a="n">'+(last?'Replay':'Next check')+'</button></div>';
+}
+function go(i,manual){if(manual)auto=false;cur=i;ui();const b=steps.children[i];if(b&&b.scrollIntoView)b.scrollIntoView({block:'nearest',inline:'center'})}
+panel.addEventListener('click',e=>{const a=e.target.dataset&&e.target.dataset.a;if(a==='b')go(cur-1,true);if(a==='n')go(cur===D.length-1?0:cur+1,true)});
+let wl=0;const mv=d=>go(Math.max(0,Math.min(D.length-1,cur+d)),true);
+addEventListener('wheel',e=>{const n=performance.now();if(n-wl<650||Math.abs(e.deltaY)<8)return;wl=n;mv(e.deltaY>0?1:-1)},{passive:true});
+let ty=0,tx=0;addEventListener('touchstart',e=>{ty=e.touches[0].clientY;tx=e.touches[0].clientX},{passive:true});
+addEventListener('touchend',e=>{const a=ty-e.changedTouches[0].clientY,b=tx-e.changedTouches[0].clientX;if(Math.abs(a)>50&&Math.abs(a)>Math.abs(b)*1.5)mv(a>0?1:-1)},{passive:true});
+setInterval(()=>{if(!auto)return;if(cur<D.length-1)go(cur+1,false);else auto=false},5000);
+ui();
+
+try{
+const cv=document.getElementById('c');
+const R=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(45,1,.1,100);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const labs=[];let C={};
+function paint(){labs.forEach((l,i)=>{const g=l.c.getContext('2d');g.clearRect(0,0,512,128);g.fillStyle=C.ink.getStyle();g.font='800 46px "Bricolage Grotesque",system-ui,sans-serif';g.textAlign='right';g.textBaseline='middle';g.fillText((i+1)+'  '+D[i].k,500,64);l.t.needsUpdate=true})}
+function pal(){C={bg:new THREE.Color(css('--bg')),ink:new THREE.Color(css('--ink')),y:new THREE.Color(css('--y')),o:new THREE.Color(css('--o'))};paint()}
+pal();
+new MutationObserver(pal).observe(document.documentElement,{attributes:true});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',pal);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(paint);
+
+const Y=i=>-i*4.6,N=D.length,funnels=[];
+/* Funnel profile (radius, along-axis), mouth on top, stem below: wide cone, rounded throat, straight stem */
+const FR=1.6,FS=.52,FL=2,CY=.6,S=28,cone=y=>FR+(FS-FR)*(y+FL)/(CY+FL);
+const pf=[[FR,-FL],[cone(-1),-1],[cone(.2),.2]];
+for(let s=1;s<=6;s++){const t=s/6,u=1-t,a=[cone(.2),.2],c=[FS,CY],b=[FS,CY+.3];pf.push([u*u*a[0]+2*u*t*c[0]+t*t*b[0],u*u*a[1]+2*u*t*c[1]+t*t*b[1]])}
+pf.push([FS,FL]);
+const FG=new THREE.LatheGeometry(pf.map(p=>new THREE.Vector2(p[0],p[1])),S),EV=[];
+for(let j=0;j<S;j+=2){const a=j/S*Math.PI*2,sn=Math.sin(a),cs=Math.cos(a);for(let q=0;q<pf.length-1;q++)EV.push(pf[q][0]*sn,pf[q][1],pf[q][0]*cs,pf[q+1][0]*sn,pf[q+1][1],pf[q+1][0]*cs)}
+[0,1,8,9].forEach(q=>{const r=pf[q][0],y=pf[q][1];for(let j=0;j<S;j++){const a=j/S*Math.PI*2,b=(j+1)/S*Math.PI*2;EV.push(r*Math.sin(a),y,r*Math.cos(a),r*Math.sin(b),y,r*Math.cos(b))}});
+const EG=new THREE.BufferGeometry();EG.setAttribute('position',new THREE.Float32BufferAttribute(EV,3));
+const RG=new THREE.TorusGeometry(FR,.045,8,40);
+for(let i=0;i<N;i++){
+  const grp=new THREE.Group();
+  const fill=new THREE.Mesh(FG,new THREE.MeshBasicMaterial({transparent:true,opacity:.14,side:THREE.DoubleSide,depthWrite:false}));
+  const edge=new THREE.LineSegments(EG,new THREE.LineBasicMaterial({transparent:true,opacity:.55}));
+  const rim=new THREE.Mesh(RG,new THREE.MeshBasicMaterial());rim.rotation.x=Math.PI/2;rim.position.y=-FL;
+  fill.userData.i=i;grp.add(fill,edge,rim);grp.rotation.z=Math.PI;grp.position.set(0,Y(i),0);scene.add(grp);funnels.push({fill,edge,rim});
+  const c=document.createElement('canvas');c.width=512;c.height=128;const t=new THREE.CanvasTexture(c);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false}));s.scale.set(3,.75,1);s.position.set(-FR-1.75,Y(i)+1.1,0);scene.add(s);labs.push({c,t,s});
+}
+paint();
+const tT=3,tB=Y(N-1)-4.25,track=new THREE.Mesh(new THREE.BoxGeometry(.05,tT-tB,.05),new THREE.MeshBasicMaterial({transparent:true,opacity:.25}));
+track.position.set(0,(tT+tB)/2,-1.2);scene.add(track);
+const flag=new THREE.Group(),pole=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,2,8),new THREE.MeshBasicMaterial()),cloth=new THREE.Mesh(new THREE.PlaneGeometry(.9,.55),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
+pole.position.y=-.15;cloth.position.set(.45,.6,0);flag.add(pole,cloth);flag.position.set(-.3,Y(N-1)-3.1,0);scene.add(flag);
+
+const M=c=>new THREE.MeshBasicMaterial({color:c}),OL=g=>new THREE.LineSegments(new THREE.EdgesGeometry(g),new THREE.LineBasicMaterial({color:0x3B2A1A}));
+const rb=new THREE.Group(),bg=new THREE.BoxGeometry(.7,.6,.5),hg=new THREE.BoxGeometry(.55,.36,.45);
+const body=new THREE.Mesh(bg,M(0xF2B632)),head=new THREE.Mesh(hg,M(0xFFF3D6));head.position.y=.48;
+const eyes=[-.12,.12].map(x=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.06,12,12),M(0x3B2A1A));e.position.set(x,.5,.23);return e});
+const ant=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,.3,8),M(0x3B2A1A));ant.position.y=.83;
+const ball=new THREE.Mesh(new THREE.SphereGeometry(.08,12,12),M(0xE5651F));ball.position.y=1;
+const disc=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.05,20),M(0xE5651F));disc.position.y=-.4;
+const o1=OL(bg),o2=OL(hg);o2.position.y=.48;
+rb.add(body,head,o1,o2,...eyes,ant,ball,disc);
+const tc=document.createElement('canvas');tc.width=512;tc.height=128;const tt=new THREE.CanvasTexture(tc);
+function paintTag(){const g=tc.getContext('2d');g.clearRect(0,0,512,128);g.fillStyle='#F2B632';g.strokeStyle='#3B2A1A';g.lineWidth=6;g.beginPath();if(g.roundRect)g.roundRect(8,14,496,100,50);else g.rect(8,14,496,100);g.fill();g.stroke();g.fillStyle='#3B2A1A';g.font='800 50px "Bricolage Grotesque",system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('Your AI agent',256,66);tt.needsUpdate=true}
+paintTag();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(paintTag);
+const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tt,transparent:true,depthWrite:false}));tag.scale.set(2.4,.6,1);tag.position.y=1.55;rb.add(tag);rb.scale.setScalar(.8);rb.position.y=3;scene.add(rb);
+
+const dot=document.createElement('canvas');dot.width=dot.height=64;const dg=dot.getContext('2d');dg.fillStyle='#fff';dg.beginPath();dg.arc(32,32,28,0,7);dg.fill();
+const P=90,pos=new Float32Array(P*3),col=new Float32Array(P*3),K=[];
+for(let k=0;k<P;k++){K.push({x:0,y:-99,z:0,vx:0,vy:0,l:0});pos[k*3+1]=-99}
+const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+const pts=new THREE.Points(geo,new THREE.PointsMaterial({size:.13,vertexColors:true,map:new THREE.CanvasTexture(dot),transparent:true,alphaTest:.3,depthWrite:false}));pts.frustumCulled=false;scene.add(pts);
+function emit(d){const s=K.find(q=>q.l<=0);if(!s)return;s.x=(Math.random()-.5)*.9;s.y=rb.position.y+.2+(Math.random()-.5)*1.1;s.z=(Math.random()-.5)*.8;s.vx=(Math.random()-.5)*.5;s.vy=d*Math.random()*.7;s.l=1}
+
+function size(){
+  const w=innerWidth,h=innerHeight;R.setSize(w,h,false);cam.aspect=w/h;
+  if(w>820)cam.setViewOffset(w,h,w*.14,-h*.04,w,h);else cam.setViewOffset(w,h,0,h*.06,w,h);
+  labs.forEach(l=>l.s.visible=w>1100);
+  cam.updateProjectionMatrix();
+}
+size();addEventListener('resize',size);
+
+const ray=new THREE.Raycaster(),m2=new THREE.Vector2(),fills=funnels.map(f=>f.fill);
+function hit(e){m2.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(m2,cam);const r=ray.intersectObjects(fills);return r.length?r[0].object.userData.i:-1}
+let mx=0;
+addEventListener('pointermove',e=>{mx=e.clientX/innerWidth-.5;cv.style.cursor=hit(e)>=0?'pointer':'default'});
+cv.addEventListener('click',e=>{const i=hit(e);if(i>=0)go(i,true)});
+
+const tmp=new THREE.Color();let last=performance.now(),t=0,ry=3,cy=3,px=0;
+(function loop(now){
+  const dt=Math.min((now-last)/1000,.05);last=now;t+=dt;
+  const dy=Y(cur)-ry;ry+=dy*(1-Math.exp(-1.6*dt));
+  rb.position.y=ry+Math.sin(t*2.4)*.05;
+  rb.rotation.z=Math.sin(t*1.6)*.05;
+  const inside=funnels.some((f,i)=>Math.abs(ry-Y(i))<FL);
+  if(Math.abs(dy)>.15&&inside&&!calm){for(let n=0;n<Math.round(dt*40);n++)emit(dy<0?1:-1)}
+  for(let k=0;k<P;k++){
+    const s=K[k];
+    if(s.l>0){s.vy-=1.2*dt;s.y+=s.vy*dt;s.x+=s.vx*dt;s.l-=dt*.7;tmp.copy(C.o).lerp(C.bg,1-Math.max(s.l,0));col[k*3]=tmp.r;col[k*3+1]=tmp.g;col[k*3+2]=tmp.b}
+    else s.y=-99;
+    pos[k*3]=s.x;pos[k*3+1]=s.y;pos[k*3+2]=s.z;
+  }
+  geo.attributes.position.needsUpdate=true;geo.attributes.color.needsUpdate=true;
+  funnels.forEach((f,i)=>{
+    const g=Math.max(0,1-Math.abs(ry-Y(i))/2.6);
+    f.fill.material.color.copy(C.y).lerp(C.o,g);f.fill.material.opacity=.14+.3*g;
+    f.edge.material.color.copy(C.ink).lerp(C.o,g);f.rim.material.color.copy(f.edge.material.color);
+  });
+  track.material.color.copy(C.ink);pole.material.color.copy(C.ink);cloth.material.color.copy(C.o);
+  cy+=(ry-cy)*(1-Math.exp(-2*dt));px+=(mx-px)*.05;
+  cam.position.set(.8+px*1.5,cy+2.4,9.5);cam.lookAt(0,cy+.3,0);
+  R.render(scene,cam);
+  requestAnimationFrame(loop);
+})(last);
+}catch(err){document.getElementById('c').style.display='none'}
+})();
+</script>
+</body>
+</html>
